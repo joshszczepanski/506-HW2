@@ -1,10 +1,10 @@
 ---
-title: "5062b"
+title: "506-HW2"
 format: html
-editor: visual
+author: Josh Szczepanski
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=TRUE}
 #1
 
 # Version 1: Using a loop
