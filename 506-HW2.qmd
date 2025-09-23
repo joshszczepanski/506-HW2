@@ -1,0 +1,130 @@
+---
+title: "5062b"
+format: html
+editor: visual
+---
+
+```{r setup, include=FALSE}
+#1
+
+# Version 1: Using a loop
+
+random_walk1 <- function(n_steps) {
+  position <- 0
+  
+  for (i in seq_len(n_steps)) {
+    direction <- sample(c(1, -1), size = 1) 
+    
+    if (direction == 1) {
+    
+      paces <- if (runif(1) < 0.05) 10 else 1
+    } else {
+
+      paces <- if (runif(1) < 0.20) -3 else -1
+    }
+    
+    position <- position + paces
+  }
+  
+  return(position)
+}
+
+
+random_walk1(10)
+random_walk1(10)
+
+# Version 2: Using built-in R vectorized functions.
+
+random_walk2 <- function(n_steps) {
+  
+  # Determine direction
+  direction <- sample(c(1, -1), size = n_steps, replace = TRUE)
+  
+  # Initialize vector to store actual movement values
+  paces <- numeric(n_steps)
+  
+  # Isolate where direction is +1
+  forward <- which(direction == 1)
+  
+  # Create 5% chance of moving 10 steps
+  extra_forward <- runif(length(forward)) <= 0.05
+  
+  # Move proper number of steps
+  paces[forward] <- ifelse(extra_forward, 10, 1)
+  
+  # Isolate where direction is -1
+  backwards <- which(direction == -1)
+  
+  # Create 20% chance of moving 3 steps back
+  extra_backwards <-runif(length(backwards)) < 0.20
+  
+  # Move proper number of steps
+  paces[backwards] <- ifelse(extra_backwards, -3, -1)
+  
+  # Return the total position after all steps
+  return(sum(paces))
+  
+}
+
+# Version 3: Using an apply function
+random_walk3 <- function(n_steps) {
+  steps <- sapply(seq_len(n_steps), function(i) {
+    
+    # Choose direction: +1 or -1
+    direction <- sample(c(1, -1), size = 1)
+    
+    # If direction is +1, apply 5% chance to move +10 instead
+    if (direction == 1) {
+      if (runif(1) < 0.05) return(10) else return(1)
+    } else {
+      
+      # If direction is -1, apply 20% chance to move -3 instead
+      if (runif(1) < 0.20) return(-3) else return(-1)
+    }
+  })
+  
+  # Return the total position after summing all steps
+  return(sum(steps))
+}
+
+
+set.seed(32)
+random_walk1(10)
+random_walk2(10)
+random_walk3(10)
+
+set.seed(32)
+random_walk1(1000)
+random_walk2(1000)
+random_walk3(1000)
+
+
+library(microbenchmark)
+
+microbenchmark(
+  loop = random_walk1(1000),
+  vectorized = random_walk2(1000),
+  apply = random_walk3(1000),
+  times = 10
+)
+
+
+
+library(microbenchmark)
+
+microbenchmark(
+  loop = random_walk1(100000),
+  vectorized = random_walk2(100000),
+  apply = random_walk3(100000),
+  times = 10
+)
+```
+
+
+
+
+
+
+
+
+
