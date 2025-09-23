@@ -158,8 +158,36 @@ prob_1000 <- prob_zero(1000)
 
 # Display results
 prob_10
+# The probability of landing at zero when starting at 10 is about 13%
+
 prob_100
+# The probability of landing at zero when starting at 100 is about 2.1%
+
 prob_1000
+# The probability of landing at zero when starting at 1000 is about 0.5%
+```
+
+```{r}
+#2
+
+# Build a Monte Carlo Sim (high n)
+day_sim <- function(n_days = 10000) {
+
+  # Attribution of sources note for following function: Used Microsoft copilot to help me figure out that multiplying n_days by the number of hours is the way to encompass how long each time period lasts
+   # Simulate hours with poisson distribution
+  morning <- rpois(n_days * 7, lambda = 1)
+  daytime <- rpois(n_days * 7, lambda = 8)
+  evening <- rpois(n_days * 5, lambda = 12)
+  rush_hour <- rnorm(n_days * 2, mean = 60, sd = sqrt(12))
+}
+
+  # Combine all hours into daily totals
+  full_day <- matrix(c(morning, daytime, evening, rush_hour), nrow = n_days){
+    
+  daily_total <- rowSums(full_day)
+  
+  return(mean(daily_total))
+}
 
 ```
 
