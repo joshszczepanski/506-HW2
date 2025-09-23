@@ -9,31 +9,39 @@ author: Josh Szczepanski
 
 # Version 1: Using a loop
 
+# Define function to simulate a random walk with n steps
 random_walk1 <- function(n_steps) {
+  
+  # Set starting position at 0
   position <- 0
   
+  # Loop through each step from 1 to n_steps
   for (i in seq_len(n_steps)) {
+    
+    # Randomly choose direction: +1 or -1
     direction <- sample(c(1, -1), size = 1) 
     
     if (direction == 1) {
     
+      # Set 5% chance of moving forward 10
       paces <- if (runif(1) < 0.05) 10 else 1
     } else {
-
+      
+      # Set 20% chance of moving back 3
       paces <- if (runif(1) < 0.20) -3 else -1
     }
     
+    # Update position
     position <- position + paces
   }
   
+  # Show finishing place
   return(position)
 }
 
-
-random_walk1(10)
-random_walk1(10)
-
 # Version 2: Using built-in R vectorized functions.
+
+# Attribution of sources note for following function: Used Microsoft copilot to help me identify ifelse and runif functions as good options
 
 random_walk2 <- function(n_steps) {
   
@@ -87,13 +95,13 @@ random_walk3 <- function(n_steps) {
   return(sum(steps))
 }
 
-
+# Control the randomization
 set.seed(32)
+
+# Demonstrate that all versions work
 random_walk1(10)
 random_walk2(10)
 random_walk3(10)
-
-set.seed(32)
 random_walk1(1000)
 random_walk2(1000)
 random_walk3(1000)
@@ -102,22 +110,57 @@ random_walk3(1000)
 library(microbenchmark)
 
 microbenchmark(
+  
+  # Run version 1 with 1000 steps
   loop = random_walk1(1000),
+  
+  # Run version 2 with 1000 steps
   vectorized = random_walk2(1000),
+  
+  # Run version 3 with 1000 steps
   apply = random_walk3(1000),
   times = 10
 )
 
 
-
-library(microbenchmark)
-
 microbenchmark(
+  
+  # Run version 1 with 100,000 steps
   loop = random_walk1(100000),
+  
+  # Run version 2 with 100,000 steps
   vectorized = random_walk2(100000),
+  
+  # Run version 3 with 100,000 steps
   apply = random_walk3(100000),
   times = 10
 )
+
+# Comparing the speeds at low inputs and high inputs: As expected, the high inputs take longer than the slow inputs.. This is evident because the high input times are measured in milliseconds, while the low input times are measured in microseconds.
+
+# Within each input ranges, the speeds are fastest in version 2 (using built in R vectorized functions), with version 1 coming in second and version 3 being the slowest
+
+
+# Build Monte Carlo simulation function, in other words, use a large number of trials and see how many times we get our desired output. Due to the large number of trials, our result should closely mirror the true probability of landing at 0
+prob_zero <- function(n_steps, n_trials = 10000, walk_fn =
+
+# Use version 2 for its speed                                     
+random_walk2){
+  results <- replicate(n_trials, walk_fn(n_steps))
+  mean(results == 0)
+}
+
+# Estimate probabilities for different step sizes
+set.seed(32)
+prob_10   <- prob_zero(10)
+prob_100  <- prob_zero(100)
+prob_1000 <- prob_zero(1000)
+
+# Display results
+prob_10
+prob_100
+prob_1000
+
 ```
 
 
