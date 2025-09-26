@@ -165,9 +165,7 @@ prob_100
 
 prob_1000
 # The probability of landing at zero when starting at 1000 is about 0.5%
-```
 
-```{r}
 #2
 
 # Build a Monte Carlo Sim (high n)
@@ -179,17 +177,133 @@ day_sim <- function(n_days = 10000) {
   daytime <- rpois(n_days * 7, lambda = 8)
   evening <- rpois(n_days * 5, lambda = 12)
   rush_hour <- rnorm(n_days * 2, mean = 60, sd = sqrt(12))
-}
+
 
   # Combine all hours into daily totals
-  full_day <- matrix(c(morning, daytime, evening, rush_hour), nrow = n_days){
-    
+  full_day <- matrix(c(morning, daytime, evening, rush_hour), nrow = n_days)
+  # Add the daily totals together  
   daily_total <- rowSums(full_day)
-  
+  # Find the average
   return(mean(daily_total))
 }
 
+
+estimate <- day_sim()
+print(estimate)
+
+# The estimation for average numbers of cars that pass this intersection per day is 243.13
+
+
+
+#3
+
+# Load the dataset
+youtube <- read.csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-02/youtube.csv')
+
+
+
+# Subtract off identifying columns
+youtube_de_identified <- subset(youtube, select = -c(brand, superbowl_ads_dot_com_url, 	
+title, description, channel_title, published_at, youtube_url))
+
+# 3a) Report the dimensions of the data after removing these columns.
+dim(youtube_de_identified)
+library(ggplot2)
+
+# List of variables to examine
+vars <- c("view_count", "like_count", "dislike_count", "favorite_count", "comment_count")
+
+# Examine view count distribution
+ggplot(youtube_de_identified, aes(x = view_count)) + geom_histogram(bins = 100, fill = "blue", color = "white") 
+# Examine like count distribution
+ggplot(youtube_de_identified, aes(x = like_count)) + geom_histogram(bins = 100, fill = "blue", color = "white") 
+# Examine dislike count distribution
+ggplot(youtube_de_identified, aes(x = dislike_count)) + geom_histogram(bins = 100, fill = "blue", color = "white") 
+# Examine favorite count distribution
+ggplot(youtube_de_identified, aes(x = favorite_count)) + geom_histogram(bins = 100, fill = "blue", color = "white") 
+# Examine comment count distribution
+ggplot(youtube_de_identified, aes(x = comment_count)) + geom_histogram(bins = 100, fill = "blue", color = "white") 
+# Based on the histograms, the "view_count", "like_count", "dislike_count", and "comment_count seem like variables that could use a transformation prior to being used as the outcome in a linear regression model, and the "favorite_count" seems like a variable that would not be appropriate to use as the outcome in a linear regression model, because that column is composed entirely of 0s and NAs.
+
+
+# Attribution of Sources Note: Used Microsoft Copilot to identify log as a smart transformation, and to help me set axes and minimal theme
+
+# Loop through each count variable
+for (v in c("view_count", "like_count", "dislike_count", "comment_count")) {
+  
+  # Create and print histogram with log-scaled x-axis
+  print(
+     # Set variable for x-axis
+    ggplot(youtube_de_identified, aes_string(x = v)) +  
+      # Plot histogram
+      geom_histogram(bins = 100, fill = "blue", color = "white") +  
+      # Use log scale to handle skewness
+      scale_x_log10() +  
+      # Apply clean theme
+      theme_minimal()  
+  )
+}
+
+
+# Step 1: Log-transform outcome variables
+youtube_de_identified$log_view_count <- log1p(youtube_de_identified$view_count)
+youtube_de_identified$log_like_count <- log1p(youtube_de_identified$like_count)
+youtube_de_identified$log_dislike_count <- log1p(youtube_de_identified$dislike_count)
+youtube_de_identified$log_comment_count <- log1p(youtube_de_identified$comment_count)
+
+# Step 2: Define predictors
+predictors <- c("funny", "show_product_quickly", "patriotic", "celebrity", "danger", "animals","use_sex", "year")
+formula_base <- paste(predictors, collapse = " + ")
+
+# Step 3: Fit models
+model_view    <- lm(as.formula(paste("log_view_count ~", formula_base)), data = youtube_de_identified)
+model_like    <- lm(as.formula(paste("log_like_count ~", formula_base)), data = youtube_de_identified)
+model_dislike <- lm(as.formula(paste("log_dislike_count ~", formula_base)), data = youtube_de_identified)
+model_comment <- lm(as.formula(paste("log_comment_count ~", formula_base)), data = youtube_de_identified)
+
+# Step 4: Review summaries
+summary(model_view)
+summary(model_like)
+summary(model_dislike)
+summary(model_comment)
+
+# Aside from year and intercept, the result with the lowest p-value, indicating potential statistical significance comes from the "patriotic" binary flag in the "dislike count" regression chart. This p-value is 0.053.  The coefficient is positive, indicating that the commercials that were patriotic had an increased number of dislikes.
+
+
+
+# Attribution of Sources note: When I first tried calculating Beta this way I was getting a column of only NA. I used Microsoft Copilot to help me realize I needed to clean the data to fix that issue.
+
+# Load necessary library
+library(dplyr)
+
+# Create design matrix X
+X <- model.matrix(~ funny + show_product_quickly + patriotic + celebrity + danger +  animals + use_sex + year, data = youtube_de_identified)
+
+# Create response variable y
+y <- youtube_de_identified$log_view_count
+
+# Test to see if there is missing data
+sum(!complete.cases(X, y)) 
+
+# Get rid of the missing data
+complete_rows <- complete.cases(X, y)
+X_clean <- X[complete_rows, ]
+y_clean <- y[complete_rows]
+
+# Use OLS
+beta_hat <- solve(t(X_clean) %*% X_clean) %*% t(X_clean) %*% y_clean
+
+# Display results
+beta_hat
+
+
+
 ```
+
+
+
+
+
 
 
 

@@ -243,10 +243,10 @@ overflows</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: microseconds
-       expr      min       lq      mean   median       uq      max neval
-       loop 1805.681 1903.220 2045.2030 2077.983 2184.644 2203.053    10
- vectorized   38.417   41.943   47.0598   43.870   54.489   61.172    10
-      apply 2068.368 2144.956 2421.9561 2381.833 2546.592 3075.164    10</code></pre>
+       expr      min       lq      mean    median       uq      max neval
+       loop 1805.476 1852.257 1914.0194 1868.8210 1930.731 2169.105    10
+ vectorized   39.729   40.508   44.2964   41.6765   50.266   54.366    10
+      apply 2004.285 2072.386 2293.7368 2170.1095 2479.311 2830.968    10</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">microbenchmark</span>(</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  </span>
@@ -263,9 +263,9 @@ overflows</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: milliseconds
        expr        min         lq       mean     median         uq        max
-       loop 196.700698 201.280111 206.870293 203.813645 217.556045 220.002515
- vectorized   2.916658   3.041093   3.080572   3.102245   3.141625   3.199517
-      apply 219.566029 230.186997 234.255115 232.609974 242.968173 249.586065
+       loop 198.967957 203.092352 209.879865 204.243365 220.653841 230.405978
+ vectorized   3.071228   3.131785   3.197865   3.176782   3.288159   3.368396
+      apply 220.737604 228.184475 238.828415 233.189201 243.928024 278.522020
  neval
     10
     10
@@ -296,13 +296,404 @@ overflows</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.1299</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>prob_100</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The probability of landing at zero when starting at 10 is about 13%</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>prob_100</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.0212</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>prob_1000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The probability of landing at zero when starting at 100 is about 2.1%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>prob_1000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.0051</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The probability of landing at zero when starting at 1000 is about 0.5%</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co">#2</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Build a Monte Carlo Sim (high n)</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>day_sim <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n_days =</span> <span class="dv">10000</span>) {</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Attribution of sources note for following function: Used Microsoft copilot to help me figure out that multiplying n_days by the number of hours is the way to encompass how long each time period lasts</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>   <span class="co"># Simulate hours with poisson distribution</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  morning <span class="ot">&lt;-</span> <span class="fu">rpois</span>(n_days <span class="sc">*</span> <span class="dv">7</span>, <span class="at">lambda =</span> <span class="dv">1</span>)</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  daytime <span class="ot">&lt;-</span> <span class="fu">rpois</span>(n_days <span class="sc">*</span> <span class="dv">7</span>, <span class="at">lambda =</span> <span class="dv">8</span>)</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>  evening <span class="ot">&lt;-</span> <span class="fu">rpois</span>(n_days <span class="sc">*</span> <span class="dv">5</span>, <span class="at">lambda =</span> <span class="dv">12</span>)</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>  rush_hour <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n_days <span class="sc">*</span> <span class="dv">2</span>, <span class="at">mean =</span> <span class="dv">60</span>, <span class="at">sd =</span> <span class="fu">sqrt</span>(<span class="dv">12</span>))</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine all hours into daily totals</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>  full_day <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(morning, daytime, evening, rush_hour), <span class="at">nrow =</span> n_days)</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add the daily totals together  </span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>  daily_total <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(full_day)</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Find the average</span></span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">mean</span>(daily_total))</span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>estimate <span class="ot">&lt;-</span> <span class="fu">day_sim</span>()</span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(estimate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 242.8518</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The estimation for average numbers of cars that pass this intersection per day is 243.13</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="co">#3</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>youtube <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-02/youtube.csv'</span>)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Subtract off identifying columns</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>youtube_de_identified <span class="ot">&lt;-</span> <span class="fu">subset</span>(youtube, <span class="at">select =</span> <span class="sc">-</span><span class="fu">c</span>(brand, superbowl_ads_dot_com_url,  </span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>title, description, channel_title, published_at, youtube_url))</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 3a) Report the dimensions of the data after removing these columns.</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(youtube_de_identified)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 247  18</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="co"># List of variables to examine</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"view_count"</span>, <span class="st">"like_count"</span>, <span class="st">"dislike_count"</span>, <span class="st">"favorite_count"</span>, <span class="st">"comment_count"</span>)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Examine view count distribution</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(youtube_de_identified, <span class="fu">aes</span>(<span class="at">x =</span> view_count)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">100</span>, <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">color =</span> <span class="st">"white"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 16 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="506-HW2_files/figure-html/setup-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Examine like count distribution</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(youtube_de_identified, <span class="fu">aes</span>(<span class="at">x =</span> like_count)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">100</span>, <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">color =</span> <span class="st">"white"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 22 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="506-HW2_files/figure-html/setup-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Examine dislike count distribution</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(youtube_de_identified, <span class="fu">aes</span>(<span class="at">x =</span> dislike_count)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">100</span>, <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">color =</span> <span class="st">"white"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 22 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="506-HW2_files/figure-html/setup-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Examine favorite count distribution</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(youtube_de_identified, <span class="fu">aes</span>(<span class="at">x =</span> favorite_count)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">100</span>, <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">color =</span> <span class="st">"white"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 16 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="506-HW2_files/figure-html/setup-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Examine comment count distribution</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(youtube_de_identified, <span class="fu">aes</span>(<span class="at">x =</span> comment_count)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">100</span>, <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">color =</span> <span class="st">"white"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="506-HW2_files/figure-html/setup-5.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Based on the histograms, the "view_count", "like_count", "dislike_count", and "comment_count seem like variables that could use a transformation prior to being used as the outcome in a linear regression model, and the "favorite_count" seems like a variable that would not be appropriate to use as the outcome in a linear regression model, because that column is composed entirely of 0s and NAs.</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Attribution of Sources Note: Used Microsoft Copilot to identify log as a smart transformation, and to help me set axes and minimal theme</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Loop through each count variable</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (v <span class="cf">in</span> <span class="fu">c</span>(<span class="st">"view_count"</span>, <span class="st">"like_count"</span>, <span class="st">"dislike_count"</span>, <span class="st">"comment_count"</span>)) {</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create and print histogram with log-scaled x-axis</span></span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>     <span class="co"># Set variable for x-axis</span></span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(youtube_de_identified, <span class="fu">aes_string</span>(<span class="at">x =</span> v)) <span class="sc">+</span>  </span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Plot histogram</span></span>
+<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">100</span>, <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">color =</span> <span class="st">"white"</span>) <span class="sc">+</span>  </span>
+<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Use log scale to handle skewness</span></span>
+<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_x_log10</span>() <span class="sc">+</span>  </span>
+<span id="cb38-17"><a href="#cb38-17" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Apply clean theme</span></span>
+<span id="cb38-18"><a href="#cb38-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_minimal</span>()  </span>
+<span id="cb38-19"><a href="#cb38-19" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb38-20"><a href="#cb38-20" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: `aes_string()` was deprecated in ggplot2 3.0.0.
+ℹ Please use tidy evaluation idioms with `aes()`.
+ℹ See also `vignette("ggplot2-in-packages")` for more information.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 16 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="506-HW2_files/figure-html/setup-6.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in scale_x_log10(): log-10 transformation introduced infinite values.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 31 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="506-HW2_files/figure-html/setup-7.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in scale_x_log10(): log-10 transformation introduced infinite values.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 69 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="506-HW2_files/figure-html/setup-8.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in scale_x_log10(): log-10 transformation introduced infinite values.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 66 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="506-HW2_files/figure-html/setup-9.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Log-transform outcome variables</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>youtube_de_identified<span class="sc">$</span>log_view_count <span class="ot">&lt;-</span> <span class="fu">log1p</span>(youtube_de_identified<span class="sc">$</span>view_count)</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>youtube_de_identified<span class="sc">$</span>log_like_count <span class="ot">&lt;-</span> <span class="fu">log1p</span>(youtube_de_identified<span class="sc">$</span>like_count)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>youtube_de_identified<span class="sc">$</span>log_dislike_count <span class="ot">&lt;-</span> <span class="fu">log1p</span>(youtube_de_identified<span class="sc">$</span>dislike_count)</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>youtube_de_identified<span class="sc">$</span>log_comment_count <span class="ot">&lt;-</span> <span class="fu">log1p</span>(youtube_de_identified<span class="sc">$</span>comment_count)</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Define predictors</span></span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>predictors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"funny"</span>, <span class="st">"show_product_quickly"</span>, <span class="st">"patriotic"</span>, <span class="st">"celebrity"</span>, <span class="st">"danger"</span>, <span class="st">"animals"</span>,<span class="st">"use_sex"</span>, <span class="st">"year"</span>)</span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>formula_base <span class="ot">&lt;-</span> <span class="fu">paste</span>(predictors, <span class="at">collapse =</span> <span class="st">" + "</span>)</span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: Fit models</span></span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>model_view    <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">as.formula</span>(<span class="fu">paste</span>(<span class="st">"log_view_count ~"</span>, formula_base)), <span class="at">data =</span> youtube_de_identified)</span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>model_like    <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">as.formula</span>(<span class="fu">paste</span>(<span class="st">"log_like_count ~"</span>, formula_base)), <span class="at">data =</span> youtube_de_identified)</span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>model_dislike <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">as.formula</span>(<span class="fu">paste</span>(<span class="st">"log_dislike_count ~"</span>, formula_base)), <span class="at">data =</span> youtube_de_identified)</span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>model_comment <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">as.formula</span>(<span class="fu">paste</span>(<span class="st">"log_comment_count ~"</span>, formula_base)), <span class="at">data =</span> youtube_de_identified)</span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 4: Review summaries</span></span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_view)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = as.formula(paste("log_view_count ~", formula_base)), 
+    data = youtube_de_identified)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-7.7742 -1.6152  0.1311  1.7036  8.4481 
+
+Coefficients:
+                          Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)              -31.55016   71.00538  -0.444    0.657
+funnyTRUE                  0.56492    0.46702   1.210    0.228
+show_product_quicklyTRUE   0.21089    0.40530   0.520    0.603
+patrioticTRUE              0.50699    0.53811   0.942    0.347
+celebrityTRUE              0.03548    0.42228   0.084    0.933
+dangerTRUE                 0.63131    0.41812   1.510    0.132
+animalsTRUE               -0.31002    0.39348  -0.788    0.432
+use_sexTRUE               -0.38671    0.44782  -0.864    0.389
+year                       0.02053    0.03531   0.582    0.561
+
+Residual standard error: 2.787 on 222 degrees of freedom
+  (16 observations deleted due to missingness)
+Multiple R-squared:  0.02694,   Adjusted R-squared:  -0.008122 
+F-statistic: 0.7684 on 8 and 222 DF,  p-value: 0.631</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_like)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = as.formula(paste("log_like_count ~", formula_base)), 
+    data = youtube_de_identified)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-5.2860 -1.6333  0.0868  1.4911  7.7431 
+
+Coefficients:
+                           Estimate Std. Error t value Pr(&gt;|t|)  
+(Intercept)              -150.51357   63.45723  -2.372   0.0186 *
+funnyTRUE                   0.47476    0.41816   1.135   0.2575  
+show_product_quicklyTRUE    0.20017    0.36391   0.550   0.5828  
+patrioticTRUE               0.80689    0.49791   1.621   0.1066  
+celebrityTRUE               0.41283    0.38212   1.080   0.2812  
+dangerTRUE                  0.63895    0.37350   1.711   0.0886 .
+animalsTRUE                -0.05944    0.35298  -0.168   0.8664  
+use_sexTRUE                -0.42952    0.40064  -1.072   0.2849  
+year                        0.07685    0.03155   2.436   0.0157 *
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 2.467 on 216 degrees of freedom
+  (22 observations deleted due to missingness)
+Multiple R-squared:  0.07313,   Adjusted R-squared:  0.03881 
+F-statistic:  2.13 on 8 and 216 DF,  p-value: 0.0342</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_dislike)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = as.formula(paste("log_dislike_count ~", formula_base)), 
+    data = youtube_de_identified)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-4.0292 -1.3299 -0.3192  0.8986  8.7219 
+
+Coefficients:
+                           Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)              -183.06813   53.34768  -3.432 0.000719 ***
+funnyTRUE                   0.25949    0.35154   0.738 0.461224    
+show_product_quicklyTRUE    0.27511    0.30593   0.899 0.369515    
+patrioticTRUE               0.81407    0.41859   1.945 0.053095 .  
+celebrityTRUE              -0.20214    0.32125  -0.629 0.529852    
+dangerTRUE                  0.22184    0.31400   0.707 0.480630    
+animalsTRUE                -0.21192    0.29675  -0.714 0.475911    
+use_sexTRUE                -0.32980    0.33681  -0.979 0.328583    
+year                        0.09207    0.02653   3.471 0.000626 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 2.074 on 216 degrees of freedom
+  (22 observations deleted due to missingness)
+Multiple R-squared:  0.09753,   Adjusted R-squared:  0.06411 
+F-statistic: 2.918 on 8 and 216 DF,  p-value: 0.004115</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_comment)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = as.formula(paste("log_comment_count ~", formula_base)), 
+    data = youtube_de_identified)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-4.1372 -1.4665 -0.1427  1.4061  5.8468 
+
+Coefficients:
+                          Estimate Std. Error t value Pr(&gt;|t|)  
+(Intercept)              -99.09835   52.92351  -1.872   0.0625 .
+funnyTRUE                  0.21954    0.34528   0.636   0.5256  
+show_product_quicklyTRUE   0.40939    0.30229   1.354   0.1771  
+patrioticTRUE              0.66698    0.39902   1.672   0.0961 .
+celebrityTRUE              0.29767    0.31541   0.944   0.3464  
+dangerTRUE                 0.17784    0.31069   0.572   0.5677  
+animalsTRUE               -0.26802    0.29347  -0.913   0.3621  
+use_sexTRUE               -0.39323    0.33163  -1.186   0.2370  
+year                       0.05034    0.02632   1.913   0.0571 .
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 2.039 on 213 degrees of freedom
+  (25 observations deleted due to missingness)
+Multiple R-squared:  0.06535,   Adjusted R-squared:  0.03025 
+F-statistic: 1.862 on 8 and 213 DF,  p-value: 0.06748</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Aside from year and intercept, the result with the lowest p-value, indicating potential statistical significance comes from the "patriotic" binary flag in the "dislike count" regression chart. This p-value is 0.053.  The coefficient is positive, indicating that the commercials that were patriotic had an increased number of dislikes.</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Attribution of Sources note: When I first tried calculating Beta this way I was getting a column of only NA. I used Microsoft Copilot to help me realize I needed to clean the data to fix that issue.</span></span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Load necessary library</span></span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create design matrix X</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> funny <span class="sc">+</span> show_product_quickly <span class="sc">+</span> patriotic <span class="sc">+</span> celebrity <span class="sc">+</span> danger <span class="sc">+</span>  animals <span class="sc">+</span> use_sex <span class="sc">+</span> year, <span class="at">data =</span> youtube_de_identified)</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create response variable y</span></span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> youtube_de_identified<span class="sc">$</span>log_view_count</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Test to see if there is missing data</span></span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="sc">!</span><span class="fu">complete.cases</span>(X, y)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 16</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get rid of the missing data</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>complete_rows <span class="ot">&lt;-</span> <span class="fu">complete.cases</span>(X, y)</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>X_clean <span class="ot">&lt;-</span> X[complete_rows, ]</span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>y_clean <span class="ot">&lt;-</span> y[complete_rows]</span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Use OLS</span></span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>beta_hat <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">t</span>(X_clean) <span class="sc">%*%</span> X_clean) <span class="sc">%*%</span> <span class="fu">t</span>(X_clean) <span class="sc">%*%</span> y_clean</span>
+<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Display results</span></span>
+<span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a>beta_hat</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                 [,1]
+(Intercept)              -31.55015804
+funnyTRUE                  0.56492445
+show_product_quicklyTRUE   0.21088918
+patrioticTRUE              0.50699051
+celebrityTRUE              0.03547862
+dangerTRUE                 0.63131085
+animalsTRUE               -0.31001838
+use_sexTRUE               -0.38670726
+year                       0.02053399</code></pre>
 </div>
 </div>
 
